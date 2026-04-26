@@ -1,8 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { auth, authorize } = require("../middleware/auth");
-
-let users = [];
+const controller = require("../controllers/users.controller");
 
 /**
  * @swagger
@@ -13,20 +12,7 @@ let users = [];
  *     security:
  *       - bearerAuth: []
  */
-router.post(
-  "/",
-  auth,
-  authorize({ roles: ["admin"], services: ["auth-service"] }),
-  (req, res) => {
-    const user = {
-      id: Date.now().toString(),
-      ...req.body,
-    };
-
-    users.push(user);
-    res.status(201).json(user);
-  }
-);
+router.post("/", auth, authorize({ roles: ["admin"], services: ["auth-service"] }), controller.createUser);
 
 /**
  * @swagger
@@ -35,21 +21,45 @@ router.post(
  *     summary: Get all users
  *     tags: [Users]
  */
-router.get("/", (req, res) => {
-  res.json(users);
-});
+router.get("/", auth, authorize({ roles: ["admin"], services: ["auth-service"] }), controller.getAllUsers);
+
+/**
+ * @swagger
+ * /users/me:
+ *   get:
+ *     summary: Get current user
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ */
+router.get("/me", auth, controller.getCurrentUser);
 
 /**
  * @swagger
  * /users/{id}:
  *   get:
  *     summary: Get user by ID
- *     tags: [User]
+ *     tags: [Users]
  */
-router.get("/:id", (req, res) => {
-  const user = users.find((u) => u.id === req.params.id);
-  if (!user) return res.sendStatus(404);
-  res.json(user);
-});
+router.get("/:id", auth, authorize({ roles: ["admin"], services: ["auth-service"] }), controller.getUserById);
+
+/**
+ * @swagger
+ * /users/{id}:
+ *   patch:
+ *     summary: Update user
+ *     tags: [Users]
+ */
+router.patch("/:id", auth, authorize({ roles: ["admin"]}), controller.updateUser);
+
+
+/**
+ * @swagger
+ * /users/{id}:
+ *   delete:
+ *     summary: Delete user
+ *     tags: [Users]
+ */
+router.delete("/:id", auth, authorize({ roles: ["admin"]}), controller.deleteUser);
 
 module.exports = router;
