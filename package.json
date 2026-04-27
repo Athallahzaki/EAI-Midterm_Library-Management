@@ -3,9 +3,9 @@
   "private": true,
   "scripts": {
     "install-all": "npm install && npm run install-services",
-    "install-services": "npm install --prefix book-service && npm install --prefix user-service",
-    "dev-all": "concurrently \"npm run dev --prefix book-service\" \"npm run dev --prefix user-service\"",
-    "start-all": "concurrently \"npm run start --prefix book-service\" \"npm run start --prefix user-service\""
+    "install-services": "npm install --prefix book-service && npm install --prefix user-service && npm install --prefix auth-service",
+    "dev-all": "concurrently \"npm run dev --prefix book-service\" \"npm run dev --prefix user-service\" \"npm run dev --prefix auth-service\"",
+    "start-all": "concurrently \"npm run start --prefix book-service\" \"npm run start --prefix user-service\" \"npm run start --prefix auth-service\""
   },
   "devDependencies": {
     "concurrently": "^9.2.1"
