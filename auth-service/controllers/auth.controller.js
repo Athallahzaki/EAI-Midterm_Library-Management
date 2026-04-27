@@ -43,6 +43,10 @@ async function register(req, res) {
 
     res.status(201).json(response.data);
   } catch (err) {
+    if (err.response?.status === 404) {
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
+    
     console.error(err.response?.data || err.message);
     res.sendStatus(500);
   }
@@ -86,6 +90,10 @@ async function login(req, res) {
 
     res.json({ token });
   } catch (err) {
+    if (err.response?.status === 404) {
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
+
     console.error(err.response?.data || err.message);
     res.sendStatus(500);
   }
