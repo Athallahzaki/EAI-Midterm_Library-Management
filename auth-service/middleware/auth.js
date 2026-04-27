@@ -37,15 +37,15 @@ function auth(req, res, next) {
 function authorize({ roles = [], services = [] }) {
   return (req, res, next) => {
     const user = req.user;
-
+    
     if (user.type === "user") {
-      if (roles.length === 0 || roles.includes(user.role)) {
+      if (roles.includes("all") || roles.includes(user.role)) {
         return next();
       }
     }
 
     if (user.type === "service") {
-      if (services.length === 0 || services.includes(user.service)) {
+      if (services.includes("all") || services.includes(user.service)) {
         return next();
       }
     }
