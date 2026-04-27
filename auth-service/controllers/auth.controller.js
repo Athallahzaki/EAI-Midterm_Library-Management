@@ -15,7 +15,6 @@ async function register(req, res) {
       email,
       password,
       phone_number,
-      role,
     } = req.body;
 
     if (!email || !password) {
@@ -24,8 +23,6 @@ async function register(req, res) {
       });
     }
 
-    const password_hash = await bcrypt.hash(password, 10);
-
     const response = await axios.post(
       `${USER_SERVICE_URL}/users`,
       {
@@ -33,9 +30,9 @@ async function register(req, res) {
         first_name,
         last_name,
         email,
-        password: password_hash,
+        password,
         phone_number,
-        role: role || "user",
+        role: "user",
       },
       {
         headers: {
@@ -57,7 +54,7 @@ async function login(req, res) {
     const { email, password } = req.body;
 
     const response = await axios.get(
-      `${USER_SERVICE_URL}/users/email/${email}`,
+      `${USER_SERVICE_URL}/users/email?email=${encodeURIComponent(email)}`,
       {
         headers: {
           Authorization: `Bearer ${jwtUtil.generateServiceToken()}`,
@@ -71,6 +68,10 @@ async function login(req, res) {
       return res.status(401).json({
         message: "Invalid credentials",
       });
+    }
+
+    if (!user.is_active) {
+      return res.status(403).json({ message: "User inactive" });
     }
 
     const match = await bcrypt.compare(password, user.password_hash);

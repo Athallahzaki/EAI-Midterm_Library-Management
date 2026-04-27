@@ -22,9 +22,14 @@ async function createUser(req, res) {
       is_active,
     } = req.body;
 
+    const email = email.toLowerCase();
+
     if (!email || !password) {
       return res.status(400).json({ message: "Email and password required" });
     }
+
+    const existing = await usersData.getUserByEmail(email);
+    if (existing) return res.status(409).json({ message: "Email already exists" });
 
     const password_hash = await bcrypt.hash(password, 10);
 
@@ -71,6 +76,20 @@ async function getCurrentUser(req, res) {
   }
 }
 
+// GET /users/email/:email (admin)
+async function getUserByEmail(req, res) {
+  try {
+    const user = await usersData.getUserByEmail(req.query.email);
+
+    if (!user) return res.sendStatus(404);
+
+    res.json(user);
+  } catch (err) {
+    console.error(err);
+    res.sendStatus(500);
+  }
+}
+
 // GET /users/:id (admin)
 async function getUserById(req, res) {
   try {
@@ -92,6 +111,14 @@ async function updateUser(req, res) {
 
     const existing = await usersData.getUserById(id);
     if (!existing) return res.sendStatus(404);
+
+    if (req.body.email) {
+      const existing_email = await usersData.getUserByEmail(req.body.email);
+
+      if (existing_email && existing_email.id !== id) {
+        return res.status(409).json({ message: "Email already exists" });
+      }
+    }
 
     let password_hash = existing.password_hash;
 
@@ -140,6 +167,7 @@ module.exports = {
   getAllUsers,
   getCurrentUser,
   getUserById,
+  getUserByEmail,
   updateUser,
   deleteUser,
 };

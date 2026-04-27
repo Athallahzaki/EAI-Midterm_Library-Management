@@ -36,6 +36,21 @@ router.get("/me", auth, controller.getCurrentUser);
 
 /**
  * @swagger
+ * /users/email:
+ *   get:
+ *     summary: Get user by Email
+ *     parameters:
+ *      - in: query
+ *        name: email
+ *        required: true
+ *        schema:
+ *         type: string
+ *     tags: [Users]
+ */
+router.get("/email", auth, authorize({ services: ["auth-service"] }), controller.getUserByEmail);
+
+/**
+ * @swagger
  * /users/{id}:
  *   get:
  *     summary: Get user by ID
