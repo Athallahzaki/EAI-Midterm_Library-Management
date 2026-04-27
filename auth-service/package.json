@@ -1,5 +1,5 @@
 {
-  "name": "user-service",
+  "name": "auth-service",
   "private": true,
   "scripts": {
     "start": "node server.js",

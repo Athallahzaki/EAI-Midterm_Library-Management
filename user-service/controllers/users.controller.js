@@ -15,20 +15,20 @@ async function createUser(req, res) {
       username,
       first_name,
       last_name,
-      email_unnormal,
+      email,
       password,
       phone_number,
       role,
       is_active,
     } = req.body;
 
-    const email = email_unnormal.toLowerCase();
+    const emailNew = email.toLowerCase();
 
-    if (!email || !password) {
+    if (!emailNew || !password) {
       return res.status(400).json({ message: "Email and password required" });
     }
 
-    const existing = await usersData.getUserByEmail(email);
+    const existing = await usersData.getUserByEmail(emailNew);
     if (existing) return res.status(409).json({ message: "Email already exists" });
 
     const password_hash = await bcrypt.hash(password, 10);
@@ -37,7 +37,7 @@ async function createUser(req, res) {
       username,
       first_name,
       last_name,
-      email,
+      email: emailNew,
       password_hash,
       phone_number,
       role: role || "user",
