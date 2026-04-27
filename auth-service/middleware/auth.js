@@ -5,7 +5,7 @@ const SERVICE_SECRET = process.env.SERVICE_JWT_SECRET;
 
 function auth(req, res, next) {
   const header = req.headers.authorization;
-  if (!header.startsWith("Bearer ")) return res.sendStatus(401);
+  if (!header || !header.startsWith("Bearer ")) return res.sendStatus(401);
 
   const token = header.split(" ")[1];
 
