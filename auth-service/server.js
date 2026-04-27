@@ -1,8 +1,4 @@
-const dotenv = require("dotenv");
-const path = require("path");
-
-dotenv.config({ path: path.resolve(__dirname, "../.env") });
-dotenv.config();
+require("dotenv").config({ path: ["./.env.local", "../.env"] });
 
 const app = require("./app");
 

@@ -3,7 +3,7 @@ const bcrypt = require("bcrypt");
 const jwtUtil = require("../utils/jwt");
 const urlUtil = require("../utils/url");
 
-const USER_SERVICE_URL = urlUtil.serviceUrl("USER");
+const USER_SERVICE_URL = urlUtil.serviceUrl("USER_SERVICE");
 
 // POST /auth/register
 async function register(req, res) {

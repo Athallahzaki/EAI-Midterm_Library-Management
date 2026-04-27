@@ -15,14 +15,14 @@ async function createUser(req, res) {
       username,
       first_name,
       last_name,
-      email,
+      email_unnormal,
       password,
       phone_number,
       role,
       is_active,
     } = req.body;
 
-    const email = email.toLowerCase();
+    const email = email_unnormal.toLowerCase();
 
     if (!email || !password) {
       return res.status(400).json({ message: "Email and password required" });
