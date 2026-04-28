@@ -10,7 +10,7 @@ const controller = require("../controllers/borrow.controller");
 router.post(
   "/",
   auth,
-  authorize({ roles: ["user", "admin"] }),
+  authorize({ roles: ["all"] }),
   controller.borrowBook
 );
 
@@ -20,7 +20,7 @@ router.post(
 router.post(
   "/:id/return",
   auth,
-  authorize({ roles: ["user", "admin"] }),
+  authorize({ roles: ["all"] }),
   controller.returnBook
 );
 
@@ -40,7 +40,7 @@ router.get(
 router.get(
   "/me",
   auth,
-  authorize({ roles: ["user", "admin"] }),
+  authorize({ roles: ["all"] }),
   controller.getMyBorrows
 );
 

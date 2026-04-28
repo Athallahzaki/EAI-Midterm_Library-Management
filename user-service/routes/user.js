@@ -46,7 +46,11 @@ router.get(
  *     security:
  *       - bearerAuth: []
  */
-router.get("/me", auth, controller.getCurrentUser);
+router.get(
+  "/me",
+  auth,
+  authorize({ roles: ["all"] }),
+  controller.getCurrentUser);
 
 /**
  * @swagger
