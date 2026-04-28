@@ -66,17 +66,12 @@ async function getAllBooks(req, res) {
 async function getBooksByIds(req, res) {
   try {
     const ids = req.query.ids?.split(",") || [];
-
+    
     if (ids.length === 0) return res.json([]);
 
-    const placeholders = ids.map(() => "?").join(",");
+    const books = await booksData.getBooksByIds(ids);
 
-    const [rows] = await db.execute(
-      `SELECT id, title, author, cover_url FROM books WHERE id IN (${placeholders})`,
-      ids
-    );
-
-    res.json(rows);
+    res.json(books);
   } catch (err) {
     console.error(err);
     res.sendStatus(500);

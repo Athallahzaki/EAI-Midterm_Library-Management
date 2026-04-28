@@ -38,6 +38,17 @@ async function getBookById(id) {
   return rows[0];
 }
 
+async function getBooksByIds(ids) {
+  const placeholders = ids.map(() => "?").join(",");
+
+  const [rows] = await db.execute(
+    `SELECT id, title, author, cover_url FROM books WHERE id IN (${placeholders})`,
+    ids
+  );
+
+  return rows;
+}
+
 async function updateBook(id, {
   isbn,
   title,
@@ -72,6 +83,7 @@ async function deleteBook(id) {
 module.exports = {
   createBook,
   getAllBooks,
+  getBooksByIds,
   getBookById,
   updateBook,
   deleteBook,

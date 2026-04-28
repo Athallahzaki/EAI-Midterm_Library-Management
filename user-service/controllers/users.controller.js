@@ -70,14 +70,9 @@ async function getUsersByIds(req, res) {
 
     if (ids.length === 0) return res.json([]);
 
-    const placeholders = ids.map(() => "?").join(",");
+    const users = await usersData.getUsersByIds(ids);
 
-    const [rows] = await db.execute(
-      `SELECT id, username, email, role FROM users WHERE id IN (${placeholders})`,
-      ids
-    );
-
-    res.json(rows);
+    res.json(users);
   } catch (err) {
     console.error(err);
     res.sendStatus(500);
@@ -101,7 +96,7 @@ async function getCurrentUser(req, res) {
 // GET /users/email/:email (admin)
 async function getUserByEmail(req, res) {
   try {
-    const email = toLowerCase(req.query.email);
+    const email = req.query.email.toLowerCase();
     const user = await usersData.getUserByEmail(email);
 
     if (!user) return res.sendStatus(404);
@@ -131,7 +126,7 @@ async function getUserById(req, res) {
 async function updateUser(req, res) {
   try {
     const id = req.params.id;
-    const email = toLowerCase(req.body.email);
+    const email = req.body.email.toLowerCase();
 
     const existing = await usersData.getUserById(id);
     if (!existing) return res.sendStatus(404);

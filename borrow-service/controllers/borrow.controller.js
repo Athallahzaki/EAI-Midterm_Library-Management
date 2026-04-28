@@ -16,7 +16,6 @@ async function borrowBook(req, res) {
       return res.status(400).json({ message: "book_id required" });
     }
 
-    // 1. Call Book Service to decrease availability
     await axios.post(
       `${BOOK_SERVICE_URL}/books/${book_id}/borrow`,
       {},
@@ -28,7 +27,6 @@ async function borrowBook(req, res) {
       }
     );
 
-    // 2. Record borrow
     const record = await borrowData.createBorrow({
       user_id,
       book_id,
@@ -63,7 +61,6 @@ async function returnBook(req, res) {
       return res.status(400).json({ message: "Already returned" });
     }
 
-    // 1. Increase availability in Book Service
     await axios.post(
       `${BOOK_SERVICE_URL}/books/${existing.book_id}/return`,
       {},
@@ -75,7 +72,6 @@ async function returnBook(req, res) {
       }
     );
 
-    // 2. Update record
     const updated = await borrowData.returnBorrow(id);
     const [enriched] = await joinBorrows([updated]);
 
