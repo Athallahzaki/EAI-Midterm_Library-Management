@@ -18,7 +18,7 @@ async function getAllUsers() {
 
 async function getUserById(id) {
   const [rows] = await db.execute(
-    "SELECT id, username, first_name, last_name, email, phone_number, role, is_active FROM users WHERE id = ?",
+    "SELECT id, username, first_name, last_name, email, password_hash, phone_number, role, is_active FROM users WHERE id = ?",
     [id]
   );
 
