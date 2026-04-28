@@ -62,6 +62,28 @@ async function getAllUsers(req, res) {
   }
 }
 
+
+// GET /users?ids=1,2,3
+async function getUsersByIds(req, res) {
+  try {
+    const ids = req.query.ids?.split(",") || [];
+
+    if (ids.length === 0) return res.json([]);
+
+    const placeholders = ids.map(() => "?").join(",");
+
+    const [rows] = await db.execute(
+      `SELECT id, username, email, role FROM users WHERE id IN (${placeholders})`,
+      ids
+    );
+
+    res.json(rows);
+  } catch (err) {
+    console.error(err);
+    res.sendStatus(500);
+  }
+}
+
 // GET /users/me
 async function getCurrentUser(req, res) {
   try {
@@ -167,6 +189,7 @@ async function deleteUser(req, res) {
 module.exports = {
   createUser,
   getAllUsers,
+  getUsersByIds,
   getCurrentUser,
   getUserById,
   getUserByEmail,

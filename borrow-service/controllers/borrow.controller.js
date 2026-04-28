@@ -41,7 +41,7 @@ async function borrowBook(req, res) {
     if (err.response) {
       return res.status(err.response.status).json(err.response.data);
     }
-    
+
     console.error(err.response?.data || err.message);
     res.sendStatus(500);
   }
@@ -135,13 +135,13 @@ async function joinBorrows(input) {
 
   try {
     const [usersRes, booksRes] = await Promise.all([
-      axios.get(`${USER_SERVICE_URL}/users?ids=${userIds.join(",")}`, {
+      axios.get(`${USER_SERVICE_URL}/users/batch?ids=${userIds.join(",")}`, {
         headers: {
           Authorization: `Bearer ${jwtUtil.generateServiceToken()}`
         },
         timeout: 3000
       }),
-      axios.get(`${BOOK_SERVICE_URL}/books?ids=${bookIds.join(",")}`, {
+      axios.get(`${BOOK_SERVICE_URL}/books/batch?ids=${bookIds.join(",")}`, {
         headers: {
           Authorization: `Bearer ${jwtUtil.generateServiceToken()}`
         },

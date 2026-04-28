@@ -28,6 +28,20 @@ router.get("/", controller.getAllBooks);
 
 /**
  * @swagger
+ * /books/batch:
+ *   get:
+ *     summary: Get book data in batch
+ *     tags: [Books]
+ */
+router.get(
+  "/batch",
+  auth,
+  authorize({ services: ["borrow-service"] }),
+  controller.getBooksByIds
+);
+
+/**
+ * @swagger
  * /books/{id}:
  *   get:
  *     summary: Get book by ID

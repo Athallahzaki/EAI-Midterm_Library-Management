@@ -25,6 +25,20 @@ router.get("/", auth, authorize({ roles: ["admin"], services: ["auth-service"] }
 
 /**
  * @swagger
+ * /users/batch:
+ *   get:
+ *     summary: Get user data in batch
+ *     tags: [Users]
+ */
+router.get(
+  "/batch",
+  auth,
+  authorize({ services: ["borrow-service"] }),
+  controller.getUsersByIds
+);
+
+/**
+ * @swagger
  * /users/me:
  *   get:
  *     summary: Get current user
