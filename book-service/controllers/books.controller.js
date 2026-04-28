@@ -15,39 +15,40 @@ async function createBook(req, res) {
     } = req.body;
 
     if (!title || !author) {
-      return res.status(400).json({ message: "Title and author required" });
+      throw { status: 400, message: "Title and author required" };
     }
 
     const total = total_count ?? 1;
     const available = available_count ?? total;
 
     if (total < 0 || available < 0) {
-      return res.status(400).json({
+      throw {
+        status: 400,
         message: "Counts must be non-negative",
-      });
+      };
     }
 
     if (available > total) {
-      return res.status(400).json({
+      throw {
+        status: 400,
         message: "available_count cannot exceed total_count",
-      });
+      };
     }
 
     const book = await booksData.createBook({
-      isbn,
+      isbn: isbn ?? null,
       title,
       author,
-      publisher,
-      description: description ?? "",
-      cover_url: cover_url ?? "",
+      publisher: publisher ?? null,
+      description: description ?? null,
+      cover_url: cover_url ?? null,
       total_count: total,
       available_count: available,
     });
 
     res.status(201).json(book);
   } catch (err) {
-    console.error(err);
-    res.sendStatus(500);
+    handleError(err, res);
   }
 }
 
@@ -57,12 +58,11 @@ async function getAllBooks(req, res) {
     const books = await booksData.getAllBooks();
     res.json(books);
   } catch (err) {
-    console.error(err);
-    res.sendStatus(500);
+    handleError(err, res);
   }
 }
 
-// GET /books?ids=1,2,3
+// GET /books/batch?ids=1,2,3
 async function getBooksByIds(req, res) {
   try {
     const ids = req.query.ids?.split(",") || [];
@@ -73,8 +73,7 @@ async function getBooksByIds(req, res) {
 
     res.json(books);
   } catch (err) {
-    console.error(err);
-    res.sendStatus(500);
+    handleError(err, res);
   }
 }
 
@@ -83,12 +82,11 @@ async function getBookById(req, res) {
   try {
     const book = await booksData.getBookById(req.params.id);
 
-    if (!book) return res.sendStatus(404);
+    if (!book) throw { status: 404, message: "Book not found" }
 
     res.json(book);
   } catch (err) {
-    console.error(err);
-    res.sendStatus(500);
+    handleError(err, res);
   }
 }
 
@@ -98,7 +96,7 @@ async function updateBook(req, res) {
     const id = req.params.id;
 
     const existing = await booksData.getBookById(id);
-    if (!existing) return res.sendStatus(404);
+    if (!existing) throw { status: 404, message: "Book not found" }
 
     const updated = {
       isbn: req.body.isbn ?? existing.isbn,
@@ -113,23 +111,24 @@ async function updateBook(req, res) {
     };
 
     if (updated.total_count < 0 || updated.available_count < 0) {
-      return res.status(400).json({
+      throw {
+        status: 400,
         message: "Counts must be non-negative",
-      });
+      };
     }
 
     if (updated.available_count > updated.total_count) {
-      return res.status(400).json({
+      throw {
+        status: 400,
         message: "available_count cannot exceed total_count",
-      });
+      };
     }
 
     const book = await booksData.updateBook(id, updated);
 
     res.json(book);
   } catch (err) {
-    console.error(err);
-    res.sendStatus(500);
+    handleError(err, res);
   }
 }
 
@@ -139,14 +138,13 @@ async function deleteBook(req, res) {
     const id = req.params.id;
 
     const existing = await booksData.getBookById(id);
-    if (!existing) return res.sendStatus(404);
+    if (!existing) throw { status: 404, message: "Book not found" }
 
     await booksData.deleteBook(id);
 
     res.sendStatus(204);
   } catch (err) {
-    console.error(err);
-    res.sendStatus(500);
+    handleError(err, res);
   }
 }
 
@@ -156,12 +154,13 @@ async function borrowBook(req, res) {
     const id = req.params.id;
 
     const book = await booksData.getBookById(id);
-    if (!book) return res.sendStatus(404);
+    if (!book) throw { status: 404, message: "Book not found" }
 
     if (book.available_count <= 0) {
-      return res.status(400).json({
+      throw {
+        status: 400,
         message: "No available copies",
-      });
+      };
     }
 
     const updated = await booksData.updateBook(id, {
@@ -171,8 +170,7 @@ async function borrowBook(req, res) {
 
     res.json(updated);
   } catch (err) {
-    console.error(err);
-    res.sendStatus(500);
+    handleError(err, res);
   }
 }
 
@@ -182,12 +180,13 @@ async function returnBook(req, res) {
     const id = req.params.id;
 
     const book = await booksData.getBookById(id);
-    if (!book) return res.sendStatus(404);
+    if (!book) throw { status: 404, message: "Book not found" }
 
     if (book.available_count >= book.total_count) {
-      return res.status(400).json({
+      throw {
+        status: 400,
         message: "Already at max capacity",
-      });
+      };
     }
 
     const updated = await booksData.updateBook(id, {
@@ -197,9 +196,17 @@ async function returnBook(req, res) {
 
     res.json(updated);
   } catch (err) {
-    console.error(err);
-    res.sendStatus(500);
+    handleError(err, res);
   }
+}
+
+function handleError(err, res) {
+  const status = err.status || err.response?.status || 500;
+  
+  const message = err.response?.data?.message || err.message || "Internal Server Error";
+
+  if (status === 500) console.error(err);
+  return res.status(status).json({ message });
 }
 
 module.exports = {

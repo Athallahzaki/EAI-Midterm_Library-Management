@@ -17,10 +17,8 @@ async function register(req, res) {
       phone_number,
     } = req.body;
 
-    if (!email || !password) {
-      return res.status(400).json({
-        message: "Email and password required",
-      });
+    if (!email || !password || !username ||!first_name || !last_name) {
+      throw { status: 400, message: "username, first_name, last_name, email, password required" };
     }
 
     const response = await axios.post(
@@ -43,12 +41,7 @@ async function register(req, res) {
 
     res.status(201).json(response.data);
   } catch (err) {
-    if (err.response?.status === 404) {
-      return res.status(401).json({ message: "Invalid credentials" });
-    }
-    
-    console.error(err.response?.data || err.message);
-    res.sendStatus(500);
+    handleError(err, res);
   }
 }
 
@@ -64,39 +57,35 @@ async function login(req, res) {
           Authorization: `Bearer ${jwtUtil.generateServiceToken()}`,
         },
       }
-    );
+    ).catch(function (error) {
+      if (error.response?.status === 404) throw { status: 401, message: "Invalid credentials" }
+    });
 
     const user = response.data;
 
-    if (!user) {
-      return res.status(401).json({
-        message: "Invalid credentials",
-      });
-    }
+    if (!user) throw { status: 401, message: "Invalid credentials" }
 
-    if (!user.is_active) {
-      return res.status(403).json({ message: "User inactive" });
-    }
+    if (!user.is_active) throw { status: 403, message: "User inactive" }
 
     const match = await bcrypt.compare(password, user.password_hash);
 
-    if (!match) {
-      return res.status(401).json({
-        message: "Invalid credentials",
-      });
-    }
+    if (!match) throw { status: 401, message: "Invalid credentials" }
 
     const token = jwtUtil.signUser(user);
 
     res.json({ token });
   } catch (err) {
-    if (err.response?.status === 404) {
-      return res.status(401).json({ message: "Invalid credentials" });
-    }
-
-    console.error(err.response?.data || err.message);
-    res.sendStatus(500);
+    handleError(err, res);
   }
+}
+
+function handleError(err, res) {
+  const status = err.status || err.response?.status || 500;
+  
+  const message = err.response?.data?.message || err.message || "Internal Server Error";
+
+  if (status === 500) console.error(err);
+  return res.status(status).json({ message });
 }
 
 module.exports = {

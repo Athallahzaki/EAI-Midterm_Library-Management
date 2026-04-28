@@ -12,9 +12,7 @@ async function borrowBook(req, res) {
     const { book_id } = req.body || {};
     const user_id = req.user.id;
 
-    if (!book_id) {
-      return res.status(400).json({ message: "book_id required" });
-    }
+    if (!book_id) throw {status: 400, message: "book_id required" };
 
     await axios.post(
       `${BOOK_SERVICE_URL}/books/${book_id}/borrow`,
@@ -36,12 +34,7 @@ async function borrowBook(req, res) {
     res.status(201).json(enriched);
 
   } catch (err) {
-    if (err.response) {
-      return res.status(err.response.status).json(err.response.data);
-    }
-
-    console.error(err.response?.data || err.message);
-    res.sendStatus(500);
+    handleError(err, res);
   }
 }
 
@@ -51,14 +44,14 @@ async function returnBook(req, res) {
     const id = req.params.id;
 
     const existing = await borrowData.getBorrowById(id);
-    if (!existing) return res.sendStatus(404);
+    if (!existing) throw {status: 404, message: "Book Borrow not found" };
 
     if (req.user.type === "user" && existing.user_id !== req.user.id) {
-      return res.status(403).json({ message: "Forbidden" });
+      throw {status: 403, message: "Forbidden" };
     }
 
     if (existing.status === "returned") {
-      return res.status(400).json({ message: "Already returned" });
+      throw {status: 400, message: "Already returned" };
     }
 
     await axios.post(
@@ -78,12 +71,7 @@ async function returnBook(req, res) {
     res.json(enriched);
 
   } catch (err) {
-    if (err.response) {
-      return res.status(err.response.status).json(err.response.data);
-    }
-
-    console.error(err.response?.data || err.message);
-    res.sendStatus(500);
+    handleError(err, res);
   }
 }
 
@@ -94,12 +82,7 @@ async function getAllBorrows(req, res) {
     const enriched = await joinBorrows(data);
     res.json(enriched);
   } catch (err) {
-    if (err.response) {
-      return res.status(err.response.status).json(err.response.data);
-    }
-
-    console.error(err);
-    res.sendStatus(500);
+    handleError(err, res);
   }
 }
 
@@ -111,12 +94,7 @@ async function getMyBorrows(req, res) {
     const enriched = await joinBorrows(data);
     res.json(enriched);
   } catch (err) {
-    if (err.response) {
-      return res.status(err.response.status).json(err.response.data);
-    }
-
-    console.error(err);
-    res.sendStatus(500);
+    handleError(err, res);
   }
 }
 
@@ -162,6 +140,15 @@ async function joinBorrows(input) {
 
     return borrows;
   }
+}
+
+function handleError(err, res) {
+  const status = err.status || err.response?.status || 500;
+  
+  const message = err.response?.data?.message || err.message || "Internal Server Error";
+
+  if (status === 500) console.error(err);
+  return res.status(status).json({ message });
 }
 
 module.exports = {

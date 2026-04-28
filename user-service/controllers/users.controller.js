@@ -24,12 +24,12 @@ async function createUser(req, res) {
 
     const emailNew = email.toLowerCase();
 
-    if (!emailNew || !password) {
-      return res.status(400).json({ message: "Email and password required" });
+    if (!emailNew || !password || !username ||!first_name || !last_name) {
+      throw {status: 400, message: "username, first_name, last_name, email, password required" };
     }
 
     const existing = await usersData.getUserByEmail(emailNew);
-    if (existing) return res.status(409).json({ message: "Email already exists" });
+    if (existing) throw {status: 409, message: "Email already exists" };
 
     const password_hash = await bcrypt.hash(password, 10);
 
@@ -39,15 +39,14 @@ async function createUser(req, res) {
       last_name,
       email: emailNew,
       password_hash,
-      phone_number,
+      phone_number: phone_number || null,
       role: role || "user",
       is_active: is_active ?? true,
     });
 
     res.status(201).json(sanitize(user));
   } catch (err) {
-    console.error(err);
-    res.sendStatus(500);
+    handleError(err, res);
   }
 }
 
@@ -57,13 +56,12 @@ async function getAllUsers(req, res) {
     const users = await usersData.getAllUsers();
     res.json(users.map(sanitize));
   } catch (err) {
-    console.error(err);
-    res.sendStatus(500);
+    handleError(err, res);
   }
 }
 
 
-// GET /users?ids=1,2,3
+// GET /users/batch?ids=1,2,3
 async function getUsersByIds(req, res) {
   try {
     const ids = req.query.ids?.split(",") || [];
@@ -74,8 +72,7 @@ async function getUsersByIds(req, res) {
 
     res.json(users);
   } catch (err) {
-    console.error(err);
-    res.sendStatus(500);
+    handleError(err, res);
   }
 }
 
@@ -84,12 +81,11 @@ async function getCurrentUser(req, res) {
   try {
     const user = await usersData.getUserById(req.user.id);
 
-    if (!user) return res.sendStatus(404);
+    if (!user) throw { status: 404, message: "User not found" };
 
     res.json(sanitize(user));
   } catch (err) {
-    console.error(err);
-    res.sendStatus(500);
+    handleError(err, res);
   }
 }
 
@@ -99,12 +95,11 @@ async function getUserByEmail(req, res) {
     const email = req.query.email.toLowerCase();
     const user = await usersData.getUserByEmail(email);
 
-    if (!user) return res.sendStatus(404);
+    if (!user) throw { status: 404, message: "Email not found" };
 
     res.json(user);
   } catch (err) {
-    console.error(err);
-    res.sendStatus(500);
+    handleError(err, res);
   }
 }
 
@@ -113,12 +108,11 @@ async function getUserById(req, res) {
   try {
     const user = await usersData.getUserById(req.params.id);
 
-    if (!user) return res.sendStatus(404);
+    if (!user) throw { status: 404, message: "User not found" };
 
     res.json(sanitize(user));
   } catch (err) {
-    console.error(err);
-    res.sendStatus(500);
+    handleError(err, res);
   }
 }
 
@@ -126,16 +120,16 @@ async function getUserById(req, res) {
 async function updateUser(req, res) {
   try {
     const id = req.params.id;
-    const email = req.body.email.toLowerCase();
+    const email = req.body.email?.toLowerCase();
 
     const existing = await usersData.getUserById(id);
-    if (!existing) return res.sendStatus(404);
+    if (!existing) throw { status: 404, message: "User not found" };
 
     if (email) {
       const existing_email = await usersData.getUserByEmail(email);
 
       if (existing_email && existing_email.id !== id) {
-        return res.status(409).json({ message: "Email already exists" });
+        throw { status: 409, message: "Email already exists" };
       }
     }
 
@@ -159,8 +153,7 @@ async function updateUser(req, res) {
 
     res.json(sanitize(user));
   } catch (err) {
-    console.error(err);
-    res.sendStatus(500);
+    handleError(err, res);
   }
 }
 
@@ -170,15 +163,23 @@ async function deleteUser(req, res) {
     const id = req.params.id;
 
     const existing = await usersData.getUserById(id);
-    if (!existing) return res.sendStatus(404);
+    if (!existing) throw { status: 404, message: "User not found" };
 
     await usersData.deleteUser(id);
 
     res.sendStatus(204);
   } catch (err) {
-    console.error(err);
-    res.sendStatus(500);
+    handleError(err, res);
   }
+}
+
+function handleError(err, res) {
+  const status = err.status || err.response?.status || 500;
+  
+  const message = err.response?.data?.message || err.message || "Internal Server Error";
+
+  if (status === 500) console.error(err);
+  return res.status(status).json({ message });
 }
 
 module.exports = {

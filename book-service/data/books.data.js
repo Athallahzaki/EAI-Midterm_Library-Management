@@ -42,7 +42,7 @@ async function getBooksByIds(ids) {
   const placeholders = ids.map(() => "?").join(",");
 
   const [rows] = await db.execute(
-    `SELECT id, title, author, cover_url FROM books WHERE id IN (${placeholders})`,
+    `SELECT id, isbn, title, author, publisher, cover_url FROM books WHERE id IN (${placeholders})`,
     ids
   );
 
