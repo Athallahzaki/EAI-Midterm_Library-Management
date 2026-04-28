@@ -79,7 +79,8 @@ async function getCurrentUser(req, res) {
 // GET /users/email/:email (admin)
 async function getUserByEmail(req, res) {
   try {
-    const user = await usersData.getUserByEmail(req.query.email);
+    const email = toLowerCase(req.query.email);
+    const user = await usersData.getUserByEmail(email);
 
     if (!user) return res.sendStatus(404);
 
@@ -108,12 +109,13 @@ async function getUserById(req, res) {
 async function updateUser(req, res) {
   try {
     const id = req.params.id;
+    const email = toLowerCase(req.body.email);
 
     const existing = await usersData.getUserById(id);
     if (!existing) return res.sendStatus(404);
 
-    if (req.body.email) {
-      const existing_email = await usersData.getUserByEmail(req.body.email);
+    if (email) {
+      const existing_email = await usersData.getUserByEmail(email);
 
       if (existing_email && existing_email.id !== id) {
         return res.status(409).json({ message: "Email already exists" });
@@ -130,7 +132,7 @@ async function updateUser(req, res) {
       username: req.body.username ?? existing.username,
       first_name: req.body.first_name ?? existing.first_name,
       last_name: req.body.last_name ?? existing.last_name,
-      email: req.body.email ?? existing.email,
+      email: email ?? existing.email,
       password_hash,
       phone_number: req.body.phone_number ?? existing.phone_number,
       is_active: req.body.is_active ?? existing.is_active,
