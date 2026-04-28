@@ -9,9 +9,19 @@ module.exports = swaggerJsdoc({
     },
     components: {
       securitySchemes: {
-        bearerAuth: {
+        // For standard users
+        userAuth: {
           type: "http",
           scheme: "bearer",
+          bearerFormat: "JWT",
+          description: "Enter User JWT. (Role-based access)",
+        },
+        // For internal microservices
+        serviceAuth: {
+          type: "http",
+          scheme: "bearer",
+          bearerFormat: "JWT",
+          description: "Enter Internal Service Token. (M2M access only)",
         },
       },
     },

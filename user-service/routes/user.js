@@ -5,12 +5,92 @@ const controller = require("../controllers/users.controller");
 
 /**
  * @swagger
+ * components:
+ *   schemas:
+ *     User:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: string
+ *         username:
+ *           type: string
+ *         first_name:
+ *           type: string
+ *         last_name:
+ *           type: string
+ *         email:
+ *           type: string
+ *         phone_number:
+ *           type: string
+ *           nullable: true
+ *         role:
+ *           type: string
+ *         is_active:
+ *           type: boolean
+ *       example:
+ *         id: "u123"
+ *         username: "jdoe88"
+ *         first_name: "John"
+ *         last_name: "Doe"
+ *         email: "john@example.com"
+ *         role: "user"
+ *         is_active: true
+ *
+ *     UserCreate:
+ *       type: object
+ *       required:
+ *         - username
+ *         - first_name
+ *         - last_name
+ *         - email
+ *         - password
+ *       properties:
+ *         username:
+ *           type: string
+ *         first_name:
+ *           type: string
+ *         last_name:
+ *           type: string
+ *         email:
+ *           type: string
+ *         password:
+ *           type: string
+ *           format: password
+ *         phone_number:
+ *           type: string
+ *         role:
+ *           type: string
+ *           enum: [user, admin]
+ *         is_active:
+ *           type: boolean
+ */
+
+/**
+ * @swagger
  * /users:
  *   post:
  *     summary: Create user
  *     tags: [Users]
  *     security:
- *       - bearerAuth: []
+ *       - userAuth: []
+ *       - serviceAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/UserCreate'
+ *     responses:
+ *       201:
+ *         description: User created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ *       400:
+ *         description: Missing required fields
+ *       409:
+ *         description: Email already exists
  */
 router.post("/", auth, authorize({ roles: ["admin"], services: ["auth-service"] }), controller.createUser);
 
@@ -18,8 +98,20 @@ router.post("/", auth, authorize({ roles: ["admin"], services: ["auth-service"] 
  * @swagger
  * /users:
  *   get:
- *     summary: Get all users
+ *     summary: Get all users (Admin/Auth Service Only)
  *     tags: [Users]
+ *     security:
+ *       - userAuth: []
+ *       - serviceAuth: []
+ *     responses:
+ *       200:
+ *         description: List of all users
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/User'
  */
 router.get("/", auth, authorize({ roles: ["admin"], services: ["auth-service"] }), controller.getAllUsers);
 
@@ -27,8 +119,26 @@ router.get("/", auth, authorize({ roles: ["admin"], services: ["auth-service"] }
  * @swagger
  * /users/batch:
  *   get:
- *     summary: Get user data in batch
+ *     summary: Get user data in batch (Internal Only)
  *     tags: [Users]
+ *     security:
+ *       - serviceAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: ids
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Comma-separated user IDs
+ *     responses:
+ *       200:
+ *         description: List of users
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/User'
  */
 router.get(
   "/batch",
@@ -41,10 +151,19 @@ router.get(
  * @swagger
  * /users/me:
  *   get:
- *     summary: Get current user
+ *     summary: Get current user profile
  *     tags: [Users]
  *     security:
- *       - bearerAuth: []
+ *       - userAuth: []
+ *     responses:
+ *       200:
+ *         description: User profile data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ *       404:
+ *         description: User not found
  */
 router.get(
   "/me",
@@ -56,14 +175,21 @@ router.get(
  * @swagger
  * /users/email:
  *   get:
- *     summary: Get user by Email
- *     parameters:
- *      - in: query
- *        name: email
- *        required: true
- *        schema:
- *         type: string
+ *     summary: Get user by Email (Internal Only)
  *     tags: [Users]
+ *     security:
+ *       - serviceAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: email
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: User data including hash (Internal Service use)
+ *       404:
+ *         description: User not found
  */
 router.get("/email", auth, authorize({ services: ["auth-service"] }), controller.getUserByEmail);
 
@@ -71,8 +197,24 @@ router.get("/email", auth, authorize({ services: ["auth-service"] }), controller
  * @swagger
  * /users/{id}:
  *   get:
- *     summary: Get user by ID
+ *     summary: Get user by ID (Admin/Auth Service Only)
  *     tags: [Users]
+ *     security:
+ *       - userAuth: []
+ *       - serviceAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: User details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
  */
 router.get("/:id", auth, authorize({ roles: ["admin"], services: ["auth-service"] }), controller.getUserById);
 
@@ -80,8 +222,24 @@ router.get("/:id", auth, authorize({ roles: ["admin"], services: ["auth-service"
  * @swagger
  * /users/{id}:
  *   patch:
- *     summary: Update user
+ *     summary: Update user (Admin Only)
  *     tags: [Users]
+ *     security:
+ *       - userAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/UserCreate'
+ *     responses:
+ *       200:
+ *         description: Updated user profile
  */
 router.patch("/:id", auth, authorize({ roles: ["admin"]}), controller.updateUser);
 
@@ -90,8 +248,19 @@ router.patch("/:id", auth, authorize({ roles: ["admin"]}), controller.updateUser
  * @swagger
  * /users/{id}:
  *   delete:
- *     summary: Delete user
+ *     summary: Delete user (Admin Only)
  *     tags: [Users]
+ *     security:
+ *       - userAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       204:
+ *         description: User deleted
  */
 router.delete("/:id", auth, authorize({ roles: ["admin"]}), controller.deleteUser);
 
