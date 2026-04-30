@@ -13,7 +13,7 @@ const controller = require("../controllers/books.controller");
  *         - author
  *       properties:
  *         id:
- *           type: string
+ *           type: integer
  *           description: The auto-generated id of the book
  *         isbn:
  *           type: string
@@ -37,7 +37,7 @@ const controller = require("../controllers/books.controller");
  *         available_count:
  *           type: integer
  *       example:
- *         id: "60d0fe4f5311236168a109ca"
+ *         id: 1
  *         isbn: "978-3-16-148410-0"
  *         title: "The Great Gatsby"
  *         author: "F. Scott Fitzgerald"

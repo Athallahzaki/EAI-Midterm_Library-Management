@@ -10,7 +10,7 @@ const controller = require("../controllers/auth.controller");
  *       type: object
  *       properties:
  *         id:
- *           type: string
+ *           type: integer
  *         username:
  *           type: string
  *         first_name:
@@ -27,20 +27,20 @@ const controller = require("../controllers/auth.controller");
  *         is_active:
  *           type: boolean
  *       example:
- *         id: "u123"
+ *         id: 1
  *         username: "jdoe88"
  *         first_name: "John"
  *         last_name: "Doe"
  *         email: "john@example.com"
+ *         phone_number: "087700000000"
  *         role: "user"
- *         is_active: true
+ *         is_active: 1
  *
- *     UserCreate:
+ *     AuthRegister:
  *       type: object
  *       required:
  *         - username
  *         - first_name
- *         - last_name
  *         - email
  *         - password
  *       properties:
@@ -57,11 +57,6 @@ const controller = require("../controllers/auth.controller");
  *           format: password
  *         phone_number:
  *           type: string
- *         role:
- *           type: string
- *           enum: [user, admin]
- *         is_active:
- *           type: boolean
  * 
  *     LoginRequest:
  *       type: object
@@ -78,7 +73,7 @@ const controller = require("../controllers/auth.controller");
  *           format: password
  *           example: "StrongPassword123!"
  *
- *     AuthResponse:
+ *     LoginResponse:
  *       type: object
  *       properties:
  *         token:
@@ -98,7 +93,7 @@ const controller = require("../controllers/auth.controller");
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/UserCreate'
+ *             $ref: '#/components/schemas/AuthRegister'
  *     responses:
  *       201:
  *         description: User registered successfully
@@ -132,7 +127,7 @@ router.post("/register", controller.register);
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/AuthResponse'
+ *               $ref: '#/components/schemas/LoginResponse'
  *       401:
  *         description: Invalid credentials
  *       403:

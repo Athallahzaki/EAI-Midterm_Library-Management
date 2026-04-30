@@ -11,7 +11,7 @@ const controller = require("../controllers/users.controller");
  *       type: object
  *       properties:
  *         id:
- *           type: string
+ *           type: integer
  *         username:
  *           type: string
  *         first_name:
@@ -28,20 +28,20 @@ const controller = require("../controllers/users.controller");
  *         is_active:
  *           type: boolean
  *       example:
- *         id: "u123"
+ *         id: 1
  *         username: "jdoe88"
  *         first_name: "John"
  *         last_name: "Doe"
  *         email: "john@example.com"
+ *         phone_number: "087700000000"
  *         role: "user"
- *         is_active: true
+ *         is_active: 1
  *
  *     UserCreate:
  *       type: object
  *       required:
  *         - username
  *         - first_name
- *         - last_name
  *         - email
  *         - password
  *       properties:
@@ -63,6 +63,23 @@ const controller = require("../controllers/users.controller");
  *           enum: [user, admin]
  *         is_active:
  *           type: boolean
+ * 
+ *     UserBatch:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: integer
+ *         username:
+ *           type: string
+ *         email:
+ *           type: string
+ *         role:
+ *           type: string
+ *       example:
+ *         id: 1
+ *         username: "jdoe88"
+ *         email: "john@example.com"
+ *         role: "user"
  */
 
 /**
@@ -138,7 +155,7 @@ router.get("/", auth, authorize({ roles: ["admin"], services: ["auth-service"] }
  *             schema:
  *               type: array
  *               items:
- *                 $ref: '#/components/schemas/User'
+ *                 $ref: '#/components/schemas/UserBatch'
  */
 router.get(
   "/batch",

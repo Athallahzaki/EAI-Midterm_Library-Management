@@ -22,11 +22,11 @@ const controller = require("../controllers/borrow.controller");
  *       type: object
  *       properties:
  *         id:
- *           type: string
+ *           type: integer
  *         user_id:
- *           type: string
+ *           type: integer
  *         book_id:
- *           type: string
+ *           type: integer
  *         status:
  *           type: string
  *           enum: [borrowed, returned]
@@ -46,7 +46,7 @@ const controller = require("../controllers/borrow.controller");
  *       type: object
  *       properties:
  *         id:
- *           type: string
+ *           type: integer
  *         username:
  *           type: string
  *         email:
@@ -56,7 +56,7 @@ const controller = require("../controllers/borrow.controller");
  *       type: object
  *       properties:
  *         id:
- *           type: string
+ *           type: integer
  *         title:
  *           type: string
  *         author:
