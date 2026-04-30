@@ -24,8 +24,8 @@ async function createUser(req, res) {
 
     const emailNew = email.toLowerCase();
 
-    if (!emailNew || !password || !username ||!first_name || !last_name) {
-      throw {status: 400, message: "username, first_name, last_name, email, password required" };
+    if (!emailNew || !password || !username ||!first_name) {
+      throw {status: 400, message: "username, first_name, email, password required" };
     }
 
     const existing = await usersData.getUserByEmail(emailNew);
@@ -36,11 +36,11 @@ async function createUser(req, res) {
     const user = await usersData.createUser({
       username,
       first_name,
-      last_name,
+      last_name: last_name ?? null,
       email: emailNew,
       password_hash,
-      phone_number: phone_number || null,
-      role: role || "user",
+      phone_number: phone_number ?? null,
+      role: role ?? "user",
       is_active: is_active ?? true,
     });
 

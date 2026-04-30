@@ -17,8 +17,8 @@ async function register(req, res) {
       phone_number,
     } = req.body;
 
-    if (!email || !password || !username ||!first_name || !last_name) {
-      throw { status: 400, message: "username, first_name, last_name, email, password required" };
+    if (!email || !password || !username ||!first_name) {
+      throw { status: 400, message: "username, first_name, email, password required" };
     }
 
     const response = await axios.post(
